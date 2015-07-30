@@ -1,0 +1,85 @@
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="bower_components/iron-image/iron-image.html">
+<link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<link rel="import" href="bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="bower_components/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="bower_components/iron-overlay-behavior/iron-overlay-manager.html">
+
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module name="remove-button">
+
+	<template>
+
+		<iron-ajax id="ajax"
+		url=""
+		content-type="application/json"
+		verbose="true"
+		on-response="onResponse"
+		handle-as="json"></iron-ajax>
+
+		<!-- Delete dialgo -->
+		<paper-dialog id="deleteDialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation"
+		backdrop="true" role="alertdialog">
+
+		<h2>Remove usuártio</h2>
+
+		<paper-dialog-scrollable>
+			Tem certeza que deseja remover o usuário <span>{{user.name}}</span>?
+		</paper-dialog-scrollable>
+
+		<div class="buttons">
+			<paper-button dialog-dismiss>Não</paper-button>
+			<paper-button on-click="onDeleteConfirm" dialog-confirm><b>Sim</b></paper-button>
+		</div>
+	</paper-dialog>
+
+	<paper-icon-button icon="delete" on-click="deleteTapped"></paper-icon-button>
+
+</template>
+
+</dom-module>
+
+<script>
+Polymer({
+	is: 'remove-button',
+
+	properties: {
+		user: Object,
+	},
+
+	deleteTapped: function(event, detail, sender) {
+		this.$.deleteDialog.refit();
+		this.$.deleteDialog.toggle();
+	},
+
+	onDeleteConfirm: function(event, detail, sender)
+	{
+		this.$.ajax.url = "http://localhost:3000/api/users/" + this.user._id;
+		this.$.ajax.method = "DELETE";
+		this.$.ajax.generateRequest();
+	},
+
+	showToastMessage: function()
+	{
+		var msg = document.querySelector('paper-toast');
+		msg.text = "Usuário removido com sucesso!";
+		msg.toggle();
+	},
+
+	onResponse : function(request)
+	{
+		var usersList = document.querySelector('user-list');
+		usersList.updateUserList();
+		this.showToastMessage();
+	},
+
+});
+
+</script>

@@ -1,0 +1,71 @@
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="user-card.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/iron-ajax/iron-request.html">
+
+<dom-module name="user-list">
+
+	<template>
+
+		<iron-ajax id="getUsers"
+		  auto
+		  url="http://localhost:3000/api/users"
+		  handle-as="json"
+		  on-response="handleResponse"></iron-ajax>
+
+		<template is="dom-repeat" items="{{users}}">
+
+			<user-card image="{{item.photo}}" user="{{item}}"></user-card>
+
+		</template>
+
+	</template>
+
+</dom-module>
+
+<script>
+
+Polymer({
+	is: 'user-list',
+
+	properties: {
+		name: {
+			type: String,
+			value: "",
+		},
+
+		age: {
+			type: String,
+			value: "",
+		},
+	},
+
+	handleResponse: function(request) {
+		var tmpUsers = request.detail.response;
+
+		var msg = document.querySelector('paper-toast');
+		msg.text = "Loading..."
+		msg.duration = 30000;
+		msg.toggle();
+		this.async(function() {
+			// Add the prefix of server on images
+			for (i = 0; i < tmpUsers.length; i++)
+			{
+				var serverUrl = "http://localhost:3000/";
+				tmpUsers[i].photo = serverUrl  + tmpUsers[i].photo;
+			}
+
+			this.users = tmpUsers;
+			msg.toggle();
+		});
+	},
+
+	updateUserList: function()
+	{
+		this.$.getUsers.generateRequest();
+	}
+})
+
+
+</script>

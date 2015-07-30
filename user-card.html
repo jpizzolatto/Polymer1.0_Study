@@ -1,0 +1,55 @@
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/paper-material/paper-material.html">
+
+<link rel="import" href="remove-button.html">
+<link rel="import" href="edit-button.html">
+
+<dom-module name="user-card">
+
+    <link rel="import" type="css" href="style/user-card.css">
+
+    <template>
+
+        <iron-ajax id="ajax"
+            auto
+            url=""
+            content-type="application/json"
+            verbose="true"
+            on-response="onResponse"
+            handle-as="json"></iron-ajax>
+
+
+        <!-- User card element -->
+        <paper-material elevation="2" class="card-header" animated="true">
+
+            <div class="card-header layout horizontal center">
+                <img src="{{image}}" width="70" height="70"></img>
+                <div class="user-info layout vertical">
+                    <h3>{{user.name}}</h3>
+                    <p>
+                        <span>{{user.age}}</span> years old
+                    </p>
+                </div>
+
+                <edit-button id="edit-icon" user="{{user}}" image="{{image}}"></edit-button>
+                <remove-button id="delete-icon" user="{{user}}"></remove-button>
+            </div>
+
+        </paper-material>
+
+    </template>
+
+    <script>
+    Polymer({
+        is: 'user-card',
+
+        properties: {
+            image: String,
+            user: Object,
+        }
+
+    });
+    </script>
+
+</dom-module>

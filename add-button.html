@@ -1,0 +1,140 @@
+
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="bower_components/iron-image/iron-image.html">
+<link rel="import" href="bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="bower_components/paper-button/paper-button.html">
+<link rel="import" href="bower_components/neon-animation/animations/fade-out-animation.html">
+<link rel="import" href="bower_components/neon-animation/animations/fade-in-animation.html">
+<link rel="import" href="bower_components/iron-overlay-behavior/iron-overlay-behavior.html">
+<link rel="import" href="bower_components/iron-overlay-behavior/iron-overlay-manager.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+<dom-module name="add-button">
+
+	<template>
+
+		<iron-ajax id="ajaxAdd"
+		url="http://localhost:3000/api/users"
+		method="POST"
+		handle-as="json"
+		content-type="application/json"
+		on-response="handleAddResponse"></iron-ajax>
+
+		<paper-dialog id="addDialog" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+
+			<h2>Adicionar usuário</h2>
+
+			<div>
+				<form is="iron-form" method="post" action="onAddConfirm">
+
+				</form>
+				<paper-input-container>
+					<label>Name</label>
+					<input is="iron-input" bind-value={{name}} id="inputName">
+				</paper-input-container>
+				<paper-input-container>
+					<label>Age</label>
+					<input is="iron-input" bind-value={{age}} id="inputAge">
+				</paper-input-container>
+				<paper-input-container>
+					<label>Photo</label>
+					<input type="file" id="inputFile">
+				</paper-input-container>
+			</div>
+
+			<div class="buttons">
+				<paper-button dialog-dismiss>Cancelar</paper-button>
+				<paper-button on-click="onAddConfirm" dialog-confirm><b>Ok</b></paper-button>
+			</div>
+		</paper-dialog>
+
+		<paper-fab id="addElement" icon="add" on-click="addElement" style="position: fixed; bottom: 20px; right: 40px;"></paper-fab>
+
+	</template>
+
+</dom-module>
+
+<script>
+Polymer({
+	is: 'add-button',
+
+	properties: {
+		name: {
+			type: String,
+			value: "",
+		},
+
+		age: {
+			type: String,
+			value: "",
+		},
+	},
+
+	addElement: function() {
+		this.name = "";
+		this.age = "";
+		this.$.inputFile.value = "";
+
+		this.$.addDialog.refit();
+		this.$.addDialog.toggle();
+	},
+
+	onAddConfirm: function(event, detail, sender)
+	{
+		var user = {
+			"name" : this.name,
+			"age" : this.age
+		};
+
+		this.$.ajaxAdd.body = JSON.stringify(user);
+		this.$.ajaxAdd.generateRequest();
+	},
+
+	showToastMessage: function()
+	{
+		var msg = document.querySelector('paper-toast');
+		msg.text = "Usuário adicionado com sucesso!";
+		msg.toggle();
+	},
+
+	handleAddResponse: function(res)
+	{
+		// Codigo 200 -> Usuário inserido com sucesso
+		if (res.detail.response.status == 200)
+		{
+			if (this.$.inputFile.files.length > 0)
+			{
+				var id = res.detail.response.id;
+
+				var fd = new FormData();
+				fd.append('file', this.$.inputFile.files[0]);
+
+				$.ajax({
+					url: "http://localhost:3000/api/users/photo/" + id,
+					data: fd,
+					processData: false,
+					contentType: false,
+					type: 'POST',
+					success: function(data) {
+						var usersList = document.querySelector('user-list');
+						usersList.updateUserList();
+						this.showToastMessage();
+					}
+				});
+			}
+			else {
+				var usersList = document.querySelector('user-list');
+				usersList.updateUserList();
+				this.showToastMessage();
+			}
+		}
+	}
+
+});
+</script>
